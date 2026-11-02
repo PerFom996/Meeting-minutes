@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="format-detection" content="telephone=no">
+<title>会议纪要</title>
+<link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="brand">
+    <span class="logo">纪</span>
+    <div>
+      <h1>会议纪要</h1>
+      <p>说话即记录，散会即纪要</p>
+    </div>
+  </div>
+  <div class="topbar-right">
+    <span id="status" class="status status-idle">待命</span>
+    <button id="btnHistory" class="ghost" type="button">历史</button>
+    <button id="btnSettings" class="ghost" type="button">设置</button>
+  </div>
+</header>
+
+<main class="layout">
+  <section class="panel panel-record">
+    <div class="panel-head">
+      <h2>会议内容</h2>
+      <div class="seg" id="modeSwitch">
+        <button data-mode="live" class="active" type="button">实时识别</button>
+        <button data-mode="upload" type="button">录音转写</button>
+      </div>
+    </div>
+
+    <div class="recorder">
+      <button id="btnRecord" class="record-btn" type="button">
+        <span class="record-icon"></span>
+        <span class="record-label">开始记录</span>
+      </button>
+      <div class="recorder-side">
+        <div class="timer" id="timer">00:00</div>
+        <div class="hint" id="hint">点击开始，边说边转成文字</div>
+      </div>
+    </div>
+
+    <div class="live-box">
+      <div class="live-label">实时字幕</div>
+      <div class="live-text" id="liveText">等待开始…</div>
+    </div>
+
+    <textarea id="transcript" class="transcript" spellcheck="false"
+      placeholder="会议文字会出现在这里，也可以直接粘贴已有的录音转写、聊天记录或手写要点…"></textarea>
+
+    <div class="panel-foot">
+      <span id="wordCount" class="muted">0 字</span>
+      <div class="foot-actions">
+        <button id="btnCorrect" class="link correct-btn" type="button">文字纠错</button>
+        <button id="btnSample" class="link" type="button">填入示例</button>
+        <button id="btnClear" class="link" type="button">清空</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel panel-result">
+    <div class="panel-head">
+      <h2>会议纪要</h2>
+      <div class="panel-head-actions">
+        <div class="seg" id="asrEngineSwitch" title="语音转写引擎">
+          <button data-asr="auto" class="active" type="button">自动</button>
+          <button data-asr="local" type="button">本地</button>
+          <button data-asr="online" type="button">在线</button>
+        </div>
+        <div class="seg" id="engineSwitch">
+          <button data-engine="auto" class="active" type="button">智能</button>
+          <button data-engine="local" type="button">本地</button>
+        </div>
+        <button id="btnSummarize" class="primary" type="button">生成纪要</button>
+      </div>
+    </div>
+
+    <div id="result" class="result">
+      <div class="empty">
+        <div class="empty-icon">◷</div>
+        <p>记录完会议内容后，点「生成纪要」</p>
+        <p class="muted">自动提炼议题、决议、待办与风险</p>
+      </div>
+    </div>
+
+    <div class="panel-foot result-foot">
+      <span id="engineTag" class="muted">—</span>
+      <div class="foot-actions">
+        <button id="btnCopy" class="link" type="button" disabled>复制</button>
+        <button id="btnExport" class="link" type="button" disabled>导出 Markdown</button>
+      </div>
+    </div>
+  </section>
+</main>
+
+<div id="toast" class="toast"></div>
+
+<!-- 设置弹层 -->
+<div id="settingsModal" class="modal" hidden>
+  <div class="modal-card">
+    <div class="modal-head">
+      <h3>会议信息与服务状态</h3>
+      <button id="btnCloseSettings" class="icon-btn" type="button">✕</button>
+    </div>
+    <div class="modal-body">
+      <label class="field">
+        <span>会议主题（可选，留空自动推断）</span>
+        <input id="inputTopic" type="text" placeholder="例如：AI 赋能体系周例会">
+      </label>
+      <label class="field">
+        <span>参会人（可选，逗号分隔）</span>
+        <input id="inputMembers" type="text" placeholder="张三, 李四, 王五">
+      </label>
+      <div class="capability" id="capability">
+        <div class="cap-row"><span>浏览器实时识别</span><b id="capLive">检测中</b></div>
+        <div class="cap-row"><span>本地离线转写</span><b id="capLocalAsr" style="color:#ff9800">检测中</b></div>
+        <div class="cap-row"><span>在线语音转写</span><b id="capAsr">检测中</b></div>
+        <div class="cap-row"><span>大模型纪要</span><b id="capLlm">检测中</b></div>
+      </div>
+      <p class="muted small">本地转写需安装 faster-whisper + 模型（首次约 1.5GB）。在线能力由同目录 .env 配置。未配置时自动使用本地引擎与本地规则摘要，数据不出本机。</p>
+    </div>
+    <div class="modal-foot">
+      <button id="btnOkSettings" class="primary" type="button">知道了</button>
+    </div>
+  </div>
+</div>
+
+<!-- 历史抽屉 -->
+<div id="historyDrawer" class="drawer" hidden>
+  <div class="drawer-card">
+    <div class="modal-head">
+      <h3>历史纪要</h3>
+      <button id="btnCloseHistory" class="icon-btn" type="button">✕</button>
+    </div>
+    <div id="historyList" class="history-list"></div>
+  </div>
+</div>
+
+<script src="./app.js"></script>
+</body>
+</html>

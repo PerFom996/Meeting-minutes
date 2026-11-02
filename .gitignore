@@ -1,0 +1,36 @@
+# ---- 环境与密钥（绝不上传真实凭据）----
+.env
+!.env.example
+
+# ---- Python 缓存 ----
+__pycache__/
+*.py[cod]
+*$py.class
+
+# ---- 模型 / 大数据文件 ----
+models/
+*.pt
+*.bin
+*.onnx
+*.safetensors
+
+# ---- 构建产物 / 打包输出 ----
+build/
+dist/
+*.spec
+*.exe
+*.dmg
+*.pkg
+*.msi
+
+# ---- 运行期用户数据（缓存、日志、数据库）----
+.userdata/
+*.log
+download_log.txt
+~$*.docx
+
+# ---- 系统 / 编辑器 ----
+Thumbs.db
+.DS_Store
+.idea/
+.vscode/
